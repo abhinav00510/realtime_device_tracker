@@ -29,6 +29,7 @@ let myLng = null;
 
 let firstLoad = true;
 
+// Store all markers
 const markers = {};
 
 const userDetails = {};
@@ -200,11 +201,14 @@ socket.on("receive-location", (data) => {
 socket.on("user-disconnected", (id) => {
 
     if (markers[id]) {
+
         map.removeLayer(markers[id]);
+
         delete markers[id];
     }
 
 });
+
 
 /* ---------------- UI HELPERS ---------------- */
 
@@ -300,3 +304,4 @@ copyBtn.addEventListener("click", () => {
     alert("Room Key Copied!");
 
 });
+
