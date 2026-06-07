@@ -1,19 +1,84 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Real-Time Tracking App</title>
-    <link rel="stylesheet" href="/css/style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" integrity="sha512-h9FcoyWjHcOcmEVkxOfTLnmZFWIH0iZhZT1H2TbOq55xssQGEJHEaIm+PgoUaZbRvQTNTluNOEfb1ZRy6D3BOw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Realtime Room Tracker</title>
+
+    <link rel="stylesheet" href="/css/style.css" />
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css"
+    />
+  </head>
+
+  <body>
+    <!-- LOGIN SCREEN -->
+
+    <div id="home">
+      <div class="card">
+        <h1>🌍 Realtime Tracker</h1>
+
+        <input type="text" id="username" placeholder="Enter Username" />
+
+        <div class="radio">
+          <label>
+            <input type="radio" name="room" id="create" checked />
+
+            Create Room
+          </label>
+
+          <label>
+            <input type="radio" name="room" id="join" />
+
+            Join Room
+          </label>
+        </div>
+
+        <input
+          type="text"
+          id="roomKeyInput"
+          placeholder="Enter Room Key"
+          style="display: none"
+        />
+
+        <button id="continueBtn">Continue</button>
+
+        <div id="createdRoom"></div>
+      </div>
+    </div>
+
+    <!-- SIDEBAR -->
+
+    <div id="sidebar">
+      <h2>Room</h2>
+
+      <h3 id="roomDisplay"></h3>
+
+      <button id="copyBtn">Copy Room Key</button>
+
+      <hr />
+
+      <h2>Members</h2>
+
+      <div id="members"></div>
+
+      <hr />
+      <h2>Location Info</h2>
+      <div id="locationInfo">Click a member to see location</div>
+      
+    </div>
+
+    <!-- MAP -->
+
     <div id="map"></div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" integrity="sha512-puJW3E/qXDqYp9IfhAI54BJEaWIfloJ7JWs7OeD5i6ruC9JZL1gERT1wjtwXFlh7CjE7ZJ+/vcRZRkIYIb6p4g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
 
-    <script src="https://cdn.socket.io/4.8.3/socket.io.min.js" integrity="sha384-kzavj5fiMwLKzzD1f8S7TeoVIEi7uKHvbTA3ueZkrzYq75pNQUiUi6Dy98Q3fxb0" crossorigin="anonymous"></script>
+    <script src="https://cdn.socket.io/4.8.3/socket.io.min.js"></script>
 
     <script src="/js/script.js"></script>
-</body>
+  </body>
 </html>
