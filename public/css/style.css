@@ -11,9 +11,37 @@ body {
   height: 100%;
 }
 
+#topBar {
+  position: absolute;
+
+  top: 0;
+
+  left: 0;
+
+  width: 100%;
+
+  height: 55px;
+
+  background: white;
+
+  display: none;
+
+  justify-content: center;
+
+  align-items: center;
+
+  font-size: 22px;
+
+  font-weight: bold;
+
+  z-index: 99999;
+
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
 #map {
   width: 100%;
-  height: 100%;
+  height: 100vh;
   display: none;
 }
 
@@ -99,25 +127,17 @@ body {
 }
 
 #sidebar {
-  width: 260px;
-
+  width: 280px;
   height: 100vh;
-
   background: white;
-
   position: absolute;
-
   left: 0;
-
   top: 0;
-
   z-index: 9999;
-
   padding: 20px;
-
   display: none;
-
-  overflow: auto;
+  overflow-y: auto;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.15);
 }
 
 #members {
@@ -146,4 +166,141 @@ body {
   width: 100%;
 
   cursor: pointer;
+}
+
+/* ---------------- MOBILE RESPONSIVE ---------------- */
+
+@media (max-width: 768px) {
+  .card {
+    width: 90%;
+    max-width: 350px;
+
+    padding: 20px;
+
+    border-radius: 15px;
+  }
+
+  .card h1 {
+    font-size: 26px;
+  }
+
+  .card input {
+    font-size: 16px;
+  }
+
+  .card button {
+    font-size: 16px;
+  }
+
+  #sidebar {
+    width: 100%;
+
+    height: 220px;
+
+    top: auto;
+
+    bottom: 0;
+
+    left: 0;
+
+    border-radius: 20px 20px 0 0;
+
+    overflow-y: auto;
+
+    box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.2);
+  }
+
+  #members {
+    gap: 8px;
+  }
+
+  .member {
+    padding: 12px;
+
+    font-size: 15px;
+  }
+
+  #copyBtn {
+    width: 100%;
+
+    margin-top: 10px;
+  }
+
+  #locationInfo {
+    font-size: 14px;
+
+    line-height: 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  #map {
+    height: calc(100vh - 220px);
+  }
+
+  #topBar {
+    height: 55px;
+  }
+}
+
+/* ---------------- LOADING SCREEN ---------------- */
+
+#loadingMessage {
+  position: fixed;
+
+  top: 0;
+
+  left: 0;
+
+  width: 100%;
+
+  height: 100vh;
+
+  background: rgba(255, 255, 255, 0.97);
+
+  display: none;
+
+  justify-content: center;
+
+  align-items: center;
+
+  flex-direction: column;
+
+  z-index: 999999;
+}
+
+#loadingMessage h2 {
+  margin-top: 25px;
+
+  font-size: 22px;
+
+  text-align: center;
+
+  padding: 20px;
+
+  color: #333;
+}
+
+.spinner {
+  width: 70px;
+
+  height: 70px;
+
+  border: 8px solid #ddd;
+
+  border-top: 8px solid #0084ff;
+
+  border-radius: 50%;
+
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }

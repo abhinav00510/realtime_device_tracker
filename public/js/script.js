@@ -29,7 +29,6 @@ let myLng = null;
 
 let firstLoad = true;
 
-// Store all markers
 const markers = {};
 
 const userDetails = {};
@@ -39,216 +38,180 @@ const userDetails = {};
 const map = L.map("map").setView([20.5937, 78.9629], 5);
 
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    attribution: "Realtime Tracker"
+  attribution: "Realtime Tracker",
 }).addTo(map);
 
 /* ---------------- DISTANCE FUNCTION ---------------- */
 
 function getDistance(lat1, lon1, lat2, lon2) {
-    const R = 6371;
+  const R = 6371;
 
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
 
-    const a =
-        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos(lat1 * Math.PI / 180) *
-        Math.cos(lat2 * Math.PI / 180) *
-        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
 
-    return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+  return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
 }
 
 /* ---------------- ROOM ACTION ---------------- */
 
 continueBtn.addEventListener("click", () => {
+  username = usernameInput.value.trim();
 
-    username = usernameInput.value.trim();
+  if (!username) {
+    alert("Enter username");
+    return;
+  }
 
-    if (!username) {
-        alert("Enter username");
-        return;
-    }
+  if (createRadio.checked) {
+    socket.emit("create-room", username);
+  } else {
+    roomKey = roomKeyInput.value.trim().toUpperCase();
 
-    if (createRadio.checked) {
-
-        socket.emit("create-room", username);
-
-    } else {
-
-        roomKey = roomKeyInput.value.trim().toUpperCase();
-
-        socket.emit("join-room", {
-            roomKey,
-            username
-        });
-
-    }
-
+    socket.emit("join-room", {
+      roomKey,
+      username,
+    });
+  }
 });
 
 /* ---------------- RADIO TOGGLE ---------------- */
 
 createRadio.addEventListener("change", () => {
-    roomKeyInput.style.display = "none";
+  roomKeyInput.style.display = "none";
 });
 
 joinRadio.addEventListener("change", () => {
-    roomKeyInput.style.display = "block";
+  roomKeyInput.style.display = "block";
 });
 
 /* ---------------- SOCKET EVENTS ---------------- */
 
 socket.on("room-created", (key) => {
+  roomKey = key;
 
-    roomKey = key;
+  createdRoomDiv.innerText = `Room Created: ${key}`;
 
-    createdRoomDiv.innerText = `Room Created: ${key}`;
+  roomDisplay.innerText = key;
 
-    roomDisplay.innerText = key;
-
-    showMap();
-
+  showMap();
 });
 
 socket.on("joined-room", (key) => {
+  roomKey = key;
 
-    roomKey = key;
+  roomDisplay.innerText = key;
 
-    roomDisplay.innerText = key;
-
-    showMap();
-
+  showMap();
 });
 
 socket.on("invalid-room", () => {
-    alert("Invalid Room Key");
+  alert("Invalid Room Key");
 });
 
 socket.on("room-full", () => {
-    alert("Room is full (max 5 users)");
+  alert("Room is full (max 5 users)");
 });
 
 socket.on("room-users", (users) => {
-    renderMembers(users);
+  renderMembers(users);
 });
 
 /* ---------------- LOCATION ---------------- */
 
 if (navigator.geolocation) {
+  navigator.geolocation.watchPosition((pos) => {
+    const { latitude, longitude } = pos.coords;
 
-    navigator.geolocation.watchPosition((pos) => {
+    myLat = latitude;
+    myLng = longitude;
 
-        const { latitude, longitude } = pos.coords;
+    document.getElementById("loadingMessage").style.display = "none";
 
-        myLat = latitude;
-        myLng = longitude;
-
-        socket.emit("send-location", {
-            latitude,
-            longitude
-        });
-
+    socket.emit("send-location", {
+      latitude,
+      longitude,
     });
-
+  });
 }
 
 /* ---------------- RECEIVE LOCATION ---------------- */
 
 socket.on("receive-location", (data) => {
+  const { id, username, latitude, longitude } = data;
 
-    const { id, username, latitude, longitude } = data;
+  userDetails[id] = { username, latitude, longitude };
 
-    userDetails[id] = { username, latitude, longitude };
+  const distance =
+    myLat && myLng
+      ? getDistance(myLat, myLng, latitude, longitude).toFixed(2)
+      : null;
 
-    const distance =
-        myLat && myLng
-            ? getDistance(myLat, myLng, latitude, longitude).toFixed(2)
-            : null;
+  let label = username;
 
-    let label = username;
+  if (distance) {
+    label += `\n${distance} km away`;
+  }
 
-    if (distance) {
-        label += `\n${distance} km away`;
-    }
+  if (markers[id]) {
+    markers[id].setLatLng([latitude, longitude]);
 
-    if (markers[id]) {
+    markers[id].setTooltipContent(label);
+  } else {
+    markers[id] = L.marker([latitude, longitude])
+      .addTo(map)
+      .bindTooltip(label, {
+        permanent: true,
+        direction: "top",
+      });
+  }
 
-        markers[id].setLatLng([latitude, longitude]);
-
-        markers[id].setTooltipContent(label);
-
-    } else {
-
-        markers[id] = L.marker([latitude, longitude])
-            .addTo(map)
-            .bindTooltip(label, {
-                permanent: true,
-                direction: "top"
-            });
-
-    }
-
-    if (firstLoad) {
+  if (firstLoad) {
     map.setView([latitude, longitude], 16);
     firstLoad = false;
-}
-
+  }
 });
 
 /* ---------------- USER DISCONNECT ---------------- */
 
 socket.on("user-disconnected", (id) => {
-
-    if (markers[id]) {
-
-        map.removeLayer(markers[id]);
-
-        delete markers[id];
-    }
-
+  if (markers[id]) {
+    map.removeLayer(markers[id]);
+    delete markers[id];
+  }
 });
-
 
 /* ---------------- UI HELPERS ---------------- */
 
+function renderMembers(users) {
+  membersDiv.innerHTML = "";
 
-function renderMembers(users){
+  users.forEach((user) => {
+    const div = document.createElement("div");
 
-    membersDiv.innerHTML="";
+    div.className = "member";
 
-    users.forEach(user=>{
+    div.innerHTML = "🟢 " + user.username;
 
-        const div=document.createElement("div");
+    div.onclick = () => {
+      const data = userDetails[user.id];
 
-        div.className="member";
+      if (!data) {
+        return;
+      }
 
-        div.innerHTML="🟢 "+user.username;
+      const distance =
+        myLat && myLng
+          ? getDistance(myLat, myLng, data.latitude, data.longitude).toFixed(2)
+          : "--";
 
-        div.onclick=()=>{
-
-            const data=userDetails[user.id];
-
-            if(!data){
-
-                return;
-
-            }
-
-            const distance=myLat&&myLng
-            ?getDistance(
-                myLat,
-                myLng,
-                data.latitude,
-                data.longitude
-            ).toFixed(2)
-            :"--";
-
-            document.getElementById(
-                "locationInfo"
-            ).innerHTML=
-
-            `
+      document.getElementById("locationInfo").innerHTML = `
 
             👤 <b>${data.username}</b>
 
@@ -269,39 +232,31 @@ function renderMembers(users){
 
             `;
 
-            map.setView(
-                [data.latitude,data.longitude],
-                18
-            );
+      map.setView([data.latitude, data.longitude], 18);
+    };
 
-        };
-
-        membersDiv.appendChild(div);
-
-    });
-
+    membersDiv.appendChild(div);
+  });
 }
 
-
 function showMap() {
+  home.style.display = "none";
 
-    home.style.display = "none";
-    mapDiv.style.display = "block";
-    sidebar.style.display = "block";
+  mapDiv.style.display = "block";
 
-    setTimeout(() => {
-        map.invalidateSize();
-    }, 300);
+  sidebar.style.display = "block";
 
+  document.getElementById("loadingMessage").style.display = "flex";
+
+  setTimeout(() => {
+    map.invalidateSize();
+  }, 300);
 }
 
 /* ---------------- COPY ROOM ---------------- */
 
 copyBtn.addEventListener("click", () => {
+  navigator.clipboard.writeText(roomKey);
 
-    navigator.clipboard.writeText(roomKey);
-
-    alert("Room Key Copied!");
-
+  alert("Room Key Copied!");
 });
-
